@@ -2,6 +2,8 @@
 
 This project utilizes Python with OpenCV and Mediapipe to track hand gestures in real-time. It enables users to control the system volume by detecting specific hand movements, specifically using finger positions.
 
+## Final Image of the project 
+
 ![Screenshot 2024-06-23 161505](https://github.com/pantpujan017/Gesture-Volume-Control/assets/173246130/5abe783b-c180-4ebd-9437-4e88b2f4b1da)
 
 ## Table of Contents
