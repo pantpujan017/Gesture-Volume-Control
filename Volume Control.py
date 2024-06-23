@@ -21,6 +21,7 @@ vol=0
 volBar=400
 volPer=0
 area=0
+colorVol=(255,0,0)
 ##
 wCam, hCam=640,480
 ##
@@ -29,7 +30,7 @@ cap.set(3,wCam)
 cap.set(4,hCam)
 pTime=0
 
-detector=htm.handDetector(detectionCon=0.7)
+detector=htm.handDetector(detectionCon=0.7,maxHands=1)
 
 
 while True:
@@ -46,18 +47,37 @@ while True:
         # print(area)
         if 250<area<1000:
             # print("yes")
-
-        # Find Distance between index and Thumb
+            # Find Distance between index and Thumb
             length,img,lineInfo=detector.findDistance(4,8,img)
-            print(length)
+            # print(length)
 
         # Convert Volume
+
+            volBar = np.interp(length, [50, 200], [400, 150])
+            volPer = np.interp(length, [50, 200], [0, 100])
+
+            smoothness=10
+            volPer=smoothness*round(volPer/smoothness)
+
+
 
         # Reduce Resolution to make it smoother
 
         # Check fingers up
+            fingers=detector.fingersUp()
+            print(fingers)
+
 
         # If pinky is down set volume
+            if not fingers[4]:
+                volume.SetMasterVolumeLevelScalar(volPer/100, None)
+                cv2.circle(img, (lineInfo[4], lineInfo[5]), 15, (0,255,0), cv2.FILLED)
+                colorVol=(0,255,0)
+            else:
+                colorVol=(255,0,0)
+
+
+
 
         # Drawings
 
@@ -83,18 +103,12 @@ while True:
         # Hand range was 50-300
         # Volume Range -65 - 0
 
-        vol=np.interp(length,[50,300],[minVol,maxVol])
-        volBar = np.interp(length, [50, 300], [400, 150])
-        volPer = np.interp(length, [50, 300], [0, 100])
-        # print(int(length),vol)
-        volume.SetMasterVolumeLevel(vol, None)
-
-        if length<50:
-            cv2.circle(img,(lineInfo[4], lineInfo[5]), 15, (0, 255, 0), cv2.FILLED)
-
     cv2.rectangle(img,(50,150),(85,400),(255,0,0),3)
     cv2.rectangle(img, (50, int(volBar)), (85, 400), (255,0,0), cv2.FILLED)
     cv2.putText(img, f'{int(volPer)} %', (40, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (255,0,0), 3)
+    cVol = int(volume.GetMasterVolumeLevelScalar() * 100)
+    cv2.putText(img, f'Vol Set: {int(cVol)}', (400, 50), cv2.FONT_HERSHEY_COMPLEX,
+                1, colorVol, 3)
 
     cTime = time.time()
     fps=1/(cTime-pTime)
